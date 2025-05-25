@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Manchester Grand Hyatt Mystery Game</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background: #1c1f2a;
+      color: #f5f5f5;
+      margin: 0;
+      padding: 20px;
+    }
+    h1, h2 {
+      text-align: center;
+      color: #f0c674;
+    }
+    .room, .clue {
+      background: #2c2f3a;
+      padding: 15px;
+      margin: 10px auto;
+      max-width: 600px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .room:hover {
+      background: #3c3f4a;
+    }
+    .hidden {
+      display: none;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      font-size: 0.9em;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🔍 Manchester Grand Hyatt Mystery Game</h1>
+<p style="text-align:center;">You are an AV Technician trying to solve a mystery during an event. Explore rooms, talk to departments, and uncover clues!</p>
+
+<div class="room" onclick="toggleClue('clue1')">
+  📍 Seaport Ballroom
+  <div class="clue hidden" id="clue1">You find a tripod that doesn't belong to your inventory. It's marked "CS Dept."</div>
+</div>
+
+<div class="room" onclick="toggleClue('clue2')">
+  📍 Harbor Ballroom
+  <div class="clue hidden" id="clue2">A hotel guest mentions hearing strange noises through the walls at night.</div>
+</div>
+
+<div class="room" onclick="toggleClue('clue3')">
+  📍 Grand Hall
+  <div class="clue hidden" id="clue3">A radio left behind is tuned to a frequency only Engineering uses.</div>
+</div>
+
+<div class="room" onclick="toggleClue('clue4')">
+  📍 Coronado Ballroom
+  <div class="clue hidden" id="clue4">You spot a security badge on the ground. Whose is it?</div>
+</div>
+
+<div class="room" onclick="toggleClue('clue5')">
+  🧹 Housekeeping Department
+  <div class="clue hidden" id="clue5">Housekeeping says they saw a suspicious person entering the service elevator late last night.</div>
+</div>
+
+<div class="room" onclick="toggleClue('clue6')">
+  🛎️ Concierge / CS Desk
+  <div class="clue hidden" id="clue6">The concierge received a package labeled "TOP SECRET" for AV but no one claimed it.</div>
+</div>
+
+<div class="room" onclick="toggleClue('clue7')">
+  🍽️ Banquets
+  <div class="clue hidden" id="clue7">Banquets staff say a mic went missing during a toast — but no one noticed who took it.</div>
+</div>
+
+<div class="room" onclick="toggleClue('clue8')">
+  🏖️ Mission Beach Breakout Room
+  <div class="clue hidden" id="clue8">Inside, the whiteboard has a cryptic message: “Meet @ 3rd floor stairwell - midnight.”</div>
+</div>
+
+<div class="room" onclick="toggleClue('clue9')">
+  🏖️ Pacific Beach Breakout Room
+  <div class="clue hidden" id="clue9">A GoPro was hidden behind a curtain — footage shows someone tampering with cables.</div>
+</div>
+
+<div class="room" onclick="toggleClue('clue10')">
+  🏖️ La Jolla Breakout Room
+  <div class="clue hidden" id="clue10">There's a torn corner of a document that seems to match a piece found in the Grand Hall.</div>
+</div>
+
+<div class="footer">
+  Created for the AV Team at Manchester Grand Hyatt • Hosted with ❤️ on Vercel + GitHub
+</div>
+
+<script>
+  function toggleClue(id) {
+    const clue = document.getElementById(id);
+    clue.classList.toggle('hidden');
+  }
+</script>
+
+</body>
+</html>

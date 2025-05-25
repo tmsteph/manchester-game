@@ -53,7 +53,7 @@
 </head>
 <body>
 
-<h1>🔍 Hyatt AV Mystery: Who Stole the Mic?</h1>
+<h1>🎤 Hyatt AV Mystery Generator</h1>
 
 <div class="section" id="intro">
   <h2>Choose Your AV Tech</h2>
@@ -64,27 +64,17 @@
 
 <div class="section hidden" id="game">
   <h2 id="welcome"></h2>
-  <p>You’ve just discovered a mic went missing during the big keynote. Rumors are flying — ghosts, sabotage, or just a prank?</p>
-  <p>Explore rooms and departments to collect clues. Once you have 5, you can try to solve the mystery!</p>
+  <p>You’ve just discovered something strange during a high-profile event. Who — or what — is behind it?</p>
+  <p>Explore rooms, gather 5 clues, and solve the mystery!</p>
 
-  <div id="rooms">
-    <button class="btn" onclick="visit('Seaport Ballroom', 'A hidden camcorder catches a shadowy figure.')">Seaport Ballroom</button>
-    <button class="btn" onclick="visit('Harbor Ballroom', 'You find a fog machine… leaking ectoplasm?!')">Harbor Ballroom</button>
-    <button class="btn" onclick="visit('Banquets', 'Someone traded a mic for extra dessert.')">Banquets</button>
-    <button class="btn" onclick="visit('Housekeeping', 'They report a floating mic at 2AM.')">Housekeeping</button>
-    <button class="btn" onclick="visit('CS Desk', 'An AV badge was found with a weird symbol.')">CS Desk</button>
-    <button class="btn" onclick="visit('Grand Hall', 'You find tape labeled "Do Not Cross - Portal Research".')">Grand Hall</button>
-  </div>
+  <div id="rooms"></div>
 
   <h3>Inventory</h3>
   <div class="inventory" id="inventory"></div>
 
   <div id="solveSection" class="hidden">
-    <h2>Who do you think did it?</h2>
-    <p>Pick a suspect:</p>
-    <button class="btn" onclick="solve('The Ghost of Hyatt Past')">👻 The Ghost of Hyatt Past</button>
-    <button class="btn" onclick="solve('Banquet Dave')">🍽️ Banquet Dave</button>
-    <button class="btn" onclick="solve('You, by accident')">😳 You, by accident</button>
+    <h2>Who or what is responsible?</h2>
+    <div id="suspects"></div>
   </div>
 </div>
 
@@ -98,10 +88,68 @@
   let inventory = [];
   const neededClues = 5;
 
+  const scenarios = [
+    {
+      title: "Missing Microphone Mayhem",
+      clues: [
+        { room: "Seaport Ballroom", clue: "You find a bag of feedback suppressors — one is clearly missing." },
+        { room: "Harbor Ballroom", clue: "A ghostly whisper repeats 'check the ceiling...'" },
+        { room: "CS Desk", clue: "A guest report says they saw someone in AV black gear sneak away." },
+        { room: "Grand Hall", clue: "A note says 'Meet behind the riser. Midnight. Don't be late.'" },
+        { room: "Housekeeping", clue: "They found a lens cap inside a laundry chute." },
+        { room: "Banquets", clue: "One server is missing — and left a headset on the dessert table." }
+      ],
+      suspects: ["The Ghost of Hyatt Past", "Banquet Dave", "AV Tech Alex"],
+      culprit: "AV Tech Alex",
+      endings: {
+        "The Ghost of Hyatt Past": "The ghost is innocent — just vibing.",
+        "Banquet Dave": "He might have eaten the evidence, but not guilty this time.",
+        "AV Tech Alex": "Alex forgot to return the mic after a rogue podcast session."
+      }
+    },
+    {
+      title: "Phantom Frequency Frenzy",
+      clues: [
+        { room: "Seaport Ballroom", clue: "The mic's frequency was hijacked during the keynote." },
+        { room: "Harbor Ballroom", clue: "A frequency scanner shows unknown signals bouncing around." },
+        { room: "CS Desk", clue: "A broken walkie-talkie was left buzzing static morse code." },
+        { room: "Coronado Ballroom", clue: "You find a book titled 'Ghost Frequencies & You'." },
+        { room: "Mission Beach Room", clue: "There’s a Ouija board made from AV cue cards." }
+      ],
+      suspects: ["The Phantom Tech", "Frequency Steve", "Ghost of Hyatt Past"],
+      culprit: "The Phantom Tech",
+      endings: {
+        "The Phantom Tech": "It was real. The phantom haunts soundboards across the country.",
+        "Frequency Steve": "Steve’s just a nerd. Misunderstood but harmless.",
+        "Ghost of Hyatt Past": "A red herring again!"
+      }
+    }
+  ];
+
+  const selected = scenarios[Math.floor(Math.random() * scenarios.length)];
+
   function chooseCharacter(name) {
     document.getElementById('intro').classList.add('hidden');
     document.getElementById('game').classList.remove('hidden');
-    document.getElementById('welcome').textContent = `Welcome, ${name}!`;
+    document.getElementById('welcome').textContent = `Welcome, ${name}! Your mission: ${selected.title}`;
+
+    const roomsDiv = document.getElementById('rooms');
+    selected.clues.forEach(({ room, clue }) => {
+      const btn = document.createElement('button');
+      btn.className = 'btn';
+      btn.textContent = room;
+      btn.onclick = () => visit(room, clue);
+      roomsDiv.appendChild(btn);
+    });
+
+    const suspectsDiv = document.getElementById('suspects');
+    selected.suspects.forEach(suspect => {
+      const btn = document.createElement('button');
+      btn.className = 'btn';
+      btn.textContent = suspect;
+      btn.onclick = () => solve(suspect);
+      suspectsDiv.appendChild(btn);
+    });
   }
 
   function visit(room, clue) {
@@ -115,24 +163,16 @@
         document.getElementById('solveSection').classList.remove('hidden');
       }
     } else {
-      alert("You've already found the clue here!");
+      alert("You've already collected that clue!");
     }
   }
 
   function solve(suspect) {
     document.getElementById('game').classList.add('hidden');
     document.getElementById('ending').classList.remove('hidden');
-
-    if (suspect === 'You, by accident') {
-      document.getElementById('endingTitle').textContent = "😅 Surprise!";
-      document.getElementById('endingText').textContent = "Turns out you packed the mic in your own backpack while cleaning up. Whoops!";
-    } else if (suspect === 'Banquet Dave') {
-      document.getElementById('endingTitle').textContent = "🍽️ Guilty as Charged!";
-      document.getElementById('endingText').textContent = "Banquet Dave traded the mic for crème brûlée. Justice is served (cold).";
-    } else {
-      document.getElementById('endingTitle').textContent = "👻 Paranormal Reveal!";
-      document.getElementById('endingText').textContent = "The Ghost of Hyatt Past was testing a frequency portal... but accidentally stole the mic across dimensions!";
-    }
+    const isCorrect = suspect === selected.culprit;
+    document.getElementById('endingTitle').textContent = isCorrect ? "🎉 Mystery Solved!" : "❌ Wrong Call!";
+    document.getElementById('endingText').textContent = selected.endings[suspect];
   }
 </script>
 

@@ -7,203 +7,193 @@
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
-      color: #f8f8f2;
+      background: #101820;
+      color: #f5f5f5;
       margin: 0;
-      padding: 20px;
-      line-height: 1.6;
+      padding: 0;
+      overflow-x: hidden;
     }
     h1, h2 {
       text-align: center;
-      color: #ffcc00;
-      margin-bottom: 0;
+      color: #ffd700;
     }
-    .section {
+    .container {
       max-width: 800px;
-      margin: 20px auto;
+      margin: auto;
       padding: 20px;
-      background: rgba(28, 30, 42, 0.95);
-      border-radius: 10px;
-      box-shadow: 0 0 10px #00000055;
+    }
+    .screen {
+      display: none;
+      transition: opacity 0.8s ease-in-out;
+      opacity: 0;
+    }
+    .screen.active {
+      display: block;
+      opacity: 1;
     }
     .btn {
-      background: #ffcc00;
-      border: none;
+      display: inline-block;
+      background: #ffd700;
+      color: #000;
       padding: 10px 20px;
       margin: 10px;
-      border-radius: 5px;
+      border: none;
+      border-radius: 6px;
       font-weight: bold;
       cursor: pointer;
-      transition: background 0.3s;
+      transition: background 0.3s ease;
     }
     .btn:hover {
-      background: #ffd633;
+      background: #ffea00;
     }
-    .hidden {
-      display: none;
+    .room-btn {
+      display: block;
+      width: 100%;
+      text-align: left;
+      margin: 10px 0;
     }
     .inventory {
+      background: #1a1a2e;
+      padding: 10px;
+      border-radius: 5px;
+      margin: 15px 0;
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin-top: 10px;
     }
     .item {
-      background: #44475a;
-      padding: 5px 10px;
+      background: #282c34;
+      padding: 8px 12px;
       border-radius: 5px;
     }
-    .score {
-      text-align: center;
-      margin-top: 20px;
-      font-weight: bold;
-      color: #00ffcc;
+    @media (max-width: 600px) {
+      h1 { font-size: 1.5rem; }
+      .btn { font-size: 1rem; padding: 8px 16px; }
     }
   </style>
 </head>
 <body>
 
-<h1>🔍 Hyatt AV Mystery Game</h1>
+<audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3"></audio>
+<audio id="clueSound" src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-completed-2062.mp3"></audio>
 
-<div class="section" id="intro">
-  <h2>Choose Your AV Tech</h2>
-  <button class="btn" onclick="chooseCharacter('Speedy Sam')">⚡ Speedy Sam</button>
-  <button class="btn" onclick="chooseCharacter('Memory Max')">🧠 Memory Max</button>
-  <button class="btn" onclick="chooseCharacter('Smooth Sasha')">😎 Smooth Sasha</button>
-</div>
+<div class="container">
+  <div id="screen-intro" class="screen active">
+    <h1>🔍 Hyatt AV Mystery Game</h1>
+    <h2>Choose Your AV Tech</h2>
+    <button class="btn" onclick="startGame('Speedy Sam')">⚡ Speedy Sam</button>
+    <button class="btn" onclick="startGame('Memory Max')">🧠 Memory Max</button>
+    <button class="btn" onclick="startGame('Smooth Sasha')">😎 Smooth Sasha</button>
+  </div>
 
-<div class="section hidden" id="game">
-  <h2 id="welcome"></h2>
-  <p id="missionText"></p>
+  <div id="screen-lobby" class="screen">
+    <h2 id="greeting"></h2>
+    <p id="scenarioText"></p>
+    <div id="roomList"></div>
+  </div>
 
-  <div id="rooms"></div>
+  <div id="screen-room" class="screen">
+    <h2 id="roomTitle"></h2>
+    <p id="clueText"></p>
+    <button class="btn" onclick="returnToLobby()">⬅ Back to Lobby</button>
+  </div>
 
-  <h3>🧾 Inventory</h3>
-  <div class="inventory" id="inventory"></div>
-
-  <div class="score" id="scoreDisplay">Score: 0</div>
-
-  <div id="solveSection" class="hidden">
-    <h2>🔎 Who or what is responsible?</h2>
-    <div id="suspects"></div>
+  <div id="screen-ending" class="screen">
+    <h2 id="endingTitle"></h2>
+    <p id="endingText"></p>
+    <div class="inventory" id="finalInventory"></div>
+    <button class="btn" onclick="location.reload()">🔁 Play Again</button>
   </div>
 </div>
 
-<div class="section hidden" id="ending">
-  <h2 id="endingTitle"></h2>
-  <p id="endingText"></p>
-  <div class="score" id="finalScore"></div>
-  <button class="btn" onclick="location.reload()">Play Again</button>
-</div>
-
 <script>
-  let inventory = [];
-  let score = 0;
-  const neededClues = 5;
+  const clickSound = document.getElementById('clickSound');
+  const clueSound = document.getElementById('clueSound');
 
   const scenarios = [
     {
-      title: "Missing Microphone Mayhem",
-      clues: [
-        { room: "Seaport Ballroom", clue: "A bag of feedback suppressors is missing one." },
-        { room: "Harbor Ballroom", clue: "Ghostly whispers echo, 'check the ceiling...'" },
-        { room: "CS Desk", clue: "A guest saw someone in AV gear sneak off." },
-        { room: "Grand Hall", clue: "A note says 'Midnight. Riser. Be there.'" },
-        { room: "Housekeeping", clue: "A lens cap was found in a laundry chute." },
-        { room: "Banquets", clue: "Someone left a headset on the dessert cart." }
-      ],
-      suspects: ["Ghost of Hyatt Past", "Banquet Dave", "AV Tech Alex"]
-    },
-    {
       title: "Phantom Frequency Frenzy",
-      clues: [
-        { room: "Seaport Ballroom", clue: "Mic frequency was hijacked." },
-        { room: "Harbor Ballroom", clue: "Strange signals bounce off the walls." },
-        { room: "CS Desk", clue: "Walkie-talkie transmits ghostly Morse code." },
-        { room: "Coronado Ballroom", clue: "A book: 'Ghost Frequencies & You'" },
-        { room: "Mission Beach", clue: "A Ouija board made of AV cue cards." }
+      rooms: [
+        { name: "Seaport Ballroom", clue: "The mic's frequency was hijacked!" },
+        { name: "Harbor Ballroom", clue: "Ghost signals echo through the sound system." },
+        { name: "CS Desk", clue: "Walkie-talkie emits Morse code from the void." }
       ],
-      suspects: ["Phantom Tech", "Frequency Steve", "Ghost of Hyatt Past"]
+      culprit: "The Phantom Tech"
     },
     {
-      title: "Projector Panic",
-      clues: [
-        { room: "La Jolla Room", clue: "Burn marks near the HDMI hub." },
-        { room: "Del Mar Room", clue: "Someone left instructions written in code." },
-        { room: "Banquets", clue: "The projector was replaced with a toaster." },
-        { room: "Housekeeping", clue: "Found black gloves and wire strippers." },
-        { room: "CS Desk", clue: "A ticket requesting a backup projector — hours before the issue." }
+      title: "Missing Microphone Mayhem",
+      rooms: [
+        { name: "Grand Hall", clue: "A feedback suppressor is missing from the kit." },
+        { name: "Banquets", clue: "Someone left a headset in the cake tray." },
+        { name: "Housekeeping", clue: "A note says 'Check the riser at midnight.'" }
       ],
-      suspects: ["Engineer Ed", "The Intern", "Techno Gremlin"]
+      culprit: "AV Tech Alex"
     }
   ];
 
-  const selected = scenarios[Math.floor(Math.random() * scenarios.length)];
-  const culprit = selected.suspects[Math.floor(Math.random() * selected.suspects.length)];
+  let currentScenario;
+  let currentClues = [];
+  let player;
 
-  function chooseCharacter(name) {
-    document.getElementById('intro').classList.add('hidden');
-    document.getElementById('game').classList.remove('hidden');
-    document.getElementById('welcome').textContent = `Welcome, ${name}!`;
-    document.getElementById('missionText').textContent = `Your mission: ${selected.title}`;
+  function playSound(sound) {
+    sound.currentTime = 0;
+    sound.play();
+  }
 
-    const roomsDiv = document.getElementById('rooms');
-    selected.clues.forEach(({ room, clue }) => {
-      const btn = document.createElement('button');
-      btn.className = 'btn';
-      btn.textContent = room;
-      btn.onclick = () => visit(room, clue);
-      roomsDiv.appendChild(btn);
+  function switchScreen(from, to) {
+    document.getElementById(from).classList.remove('active');
+    document.getElementById(to).classList.add('active');
+  }
+
+  function startGame(character) {
+    playSound(clickSound);
+    player = character;
+    currentScenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+    document.getElementById("greeting").textContent = `Welcome, ${player}!`;
+    document.getElementById("scenarioText").textContent = `Your mission: ${currentScenario.title}`;
+    const roomList = document.getElementById("roomList");
+    roomList.innerHTML = "";
+    currentScenario.rooms.forEach(room => {
+      const btn = document.createElement("button");
+      btn.className = "btn room-btn";
+      btn.textContent = `🔍 Enter ${room.name}`;
+      btn.onclick = () => enterRoom(room);
+      roomList.appendChild(btn);
     });
+    switchScreen("screen-intro", "screen-lobby");
+  }
 
-    const suspectsDiv = document.getElementById('suspects');
-    selected.suspects.forEach(suspect => {
-      const btn = document.createElement('button');
-      btn.className = 'btn';
-      btn.textContent = suspect;
-      btn.onclick = () => solve(suspect);
-      suspectsDiv.appendChild(btn);
+  function enterRoom(room) {
+    playSound(clickSound);
+    document.getElementById("roomTitle").textContent = room.name;
+    document.getElementById("clueText").textContent = room.clue;
+    if (!currentClues.includes(room.clue)) {
+      currentClues.push(room.clue);
+      playSound(clueSound);
+    }
+    if (currentClues.length === currentScenario.rooms.length) {
+      setTimeout(showEnding, 2000);
+    }
+    switchScreen("screen-lobby", "screen-room");
+  }
+
+  function returnToLobby() {
+    playSound(clickSound);
+    switchScreen("screen-room", "screen-lobby");
+  }
+
+  function showEnding() {
+    document.getElementById("endingTitle").textContent = "🎉 Mystery Solved!";
+    document.getElementById("endingText").textContent = `${currentScenario.culprit} was behind it all! Great job, ${player}!`;
+    const inv = document.getElementById("finalInventory");
+    inv.innerHTML = "";
+    currentClues.forEach(clue => {
+      const div = document.createElement("div");
+      div.className = "item";
+      div.textContent = clue;
+      inv.appendChild(div);
     });
-  }
-
-  function visit(room, clue) {
-    if (!inventory.includes(clue)) {
-      inventory.push(clue);
-      const item = document.createElement('div');
-      item.className = 'item';
-      item.textContent = clue;
-      document.getElementById('inventory').appendChild(item);
-      score += 10;
-      updateScore();
-      if (inventory.length >= neededClues) {
-        document.getElementById('solveSection').classList.remove('hidden');
-      }
-    } else {
-      alert("You've already investigated this room.");
-      score -= 5;
-      updateScore();
-    }
-  }
-
-  function updateScore() {
-    document.getElementById('scoreDisplay').textContent = "Score: " + score;
-  }
-
-  function solve(suspect) {
-    document.getElementById('game').classList.add('hidden');
-    document.getElementById('ending').classList.remove('hidden');
-
-    if (suspect === culprit) {
-      document.getElementById('endingTitle').textContent = "🎉 Mystery Solved!";
-      document.getElementById('endingText').textContent = `${suspect} was indeed the culprit! Great detective work.`;
-      score += 50;
-    } else {
-      document.getElementById('endingTitle').textContent = "❌ Wrong Accusation!";
-      document.getElementById('endingText').textContent = `${suspect} was innocent. The real culprit was ${culprit}. Better luck next time.`;
-      score -= 20;
-    }
-
-    document.getElementById('finalScore').textContent = "Final Score: " + score;
+    switchScreen("screen-room", "screen-ending");
   }
 </script>
 

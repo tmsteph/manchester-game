@@ -3,105 +3,136 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Manchester Grand Hyatt Mystery Game</title>
+  <title>Hyatt AV Mystery Game</title>
   <style>
     body {
-      font-family: 'Arial', sans-serif;
-      background: #1c1f2a;
-      color: #f5f5f5;
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f111a;
+      color: #f8f8f2;
       margin: 0;
       padding: 20px;
     }
     h1, h2 {
       text-align: center;
-      color: #f0c674;
+      color: #ffcc00;
     }
-    .room, .clue {
-      background: #2c2f3a;
-      padding: 15px;
-      margin: 10px auto;
-      max-width: 600px;
+    .section {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      background: #1c1e2a;
       border-radius: 10px;
-      cursor: pointer;
-      transition: background 0.3s;
     }
-    .room:hover {
-      background: #3c3f4a;
+    .btn {
+      background: #ffcc00;
+      border: none;
+      padding: 10px 20px;
+      margin: 10px;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background: #ffd633;
     }
     .hidden {
       display: none;
     }
-    .footer {
-      text-align: center;
-      margin-top: 30px;
-      font-size: 0.9em;
-      color: #aaa;
+    .inventory {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .item {
+      background: #282a36;
+      padding: 5px 10px;
+      border-radius: 5px;
     }
   </style>
 </head>
 <body>
 
-<h1>🔍 Manchester Grand Hyatt Mystery Game</h1>
-<p style="text-align:center;">You are an AV Technician trying to solve a mystery during an event. Explore rooms, talk to departments, and uncover clues!</p>
+<h1>🔍 Hyatt AV Mystery: Who Stole the Mic?</h1>
 
-<div class="room" onclick="toggleClue('clue1')">
-  📍 Seaport Ballroom
-  <div class="clue hidden" id="clue1">You find a tripod that doesn't belong to your inventory. It's marked "CS Dept."</div>
+<div class="section" id="intro">
+  <h2>Choose Your AV Tech</h2>
+  <button class="btn" onclick="chooseCharacter('Speedy Sam')">⚡ Speedy Sam</button>
+  <button class="btn" onclick="chooseCharacter('Memory Max')">🧠 Memory Max</button>
+  <button class="btn" onclick="chooseCharacter('Smooth Sasha')">😎 Smooth Sasha</button>
 </div>
 
-<div class="room" onclick="toggleClue('clue2')">
-  📍 Harbor Ballroom
-  <div class="clue hidden" id="clue2">A hotel guest mentions hearing strange noises through the walls at night.</div>
+<div class="section hidden" id="game">
+  <h2 id="welcome"></h2>
+  <p>You’ve just discovered a mic went missing during the big keynote. Rumors are flying — ghosts, sabotage, or just a prank?</p>
+  <p>Explore rooms and departments to collect clues. Once you have 5, you can try to solve the mystery!</p>
+
+  <div id="rooms">
+    <button class="btn" onclick="visit('Seaport Ballroom', 'A hidden camcorder catches a shadowy figure.')">Seaport Ballroom</button>
+    <button class="btn" onclick="visit('Harbor Ballroom', 'You find a fog machine… leaking ectoplasm?!')">Harbor Ballroom</button>
+    <button class="btn" onclick="visit('Banquets', 'Someone traded a mic for extra dessert.')">Banquets</button>
+    <button class="btn" onclick="visit('Housekeeping', 'They report a floating mic at 2AM.')">Housekeeping</button>
+    <button class="btn" onclick="visit('CS Desk', 'An AV badge was found with a weird symbol.')">CS Desk</button>
+    <button class="btn" onclick="visit('Grand Hall', 'You find tape labeled "Do Not Cross - Portal Research".')">Grand Hall</button>
+  </div>
+
+  <h3>Inventory</h3>
+  <div class="inventory" id="inventory"></div>
+
+  <div id="solveSection" class="hidden">
+    <h2>Who do you think did it?</h2>
+    <p>Pick a suspect:</p>
+    <button class="btn" onclick="solve('The Ghost of Hyatt Past')">👻 The Ghost of Hyatt Past</button>
+    <button class="btn" onclick="solve('Banquet Dave')">🍽️ Banquet Dave</button>
+    <button class="btn" onclick="solve('You, by accident')">😳 You, by accident</button>
+  </div>
 </div>
 
-<div class="room" onclick="toggleClue('clue3')">
-  📍 Grand Hall
-  <div class="clue hidden" id="clue3">A radio left behind is tuned to a frequency only Engineering uses.</div>
-</div>
-
-<div class="room" onclick="toggleClue('clue4')">
-  📍 Coronado Ballroom
-  <div class="clue hidden" id="clue4">You spot a security badge on the ground. Whose is it?</div>
-</div>
-
-<div class="room" onclick="toggleClue('clue5')">
-  🧹 Housekeeping Department
-  <div class="clue hidden" id="clue5">Housekeeping says they saw a suspicious person entering the service elevator late last night.</div>
-</div>
-
-<div class="room" onclick="toggleClue('clue6')">
-  🛎️ Concierge / CS Desk
-  <div class="clue hidden" id="clue6">The concierge received a package labeled "TOP SECRET" for AV but no one claimed it.</div>
-</div>
-
-<div class="room" onclick="toggleClue('clue7')">
-  🍽️ Banquets
-  <div class="clue hidden" id="clue7">Banquets staff say a mic went missing during a toast — but no one noticed who took it.</div>
-</div>
-
-<div class="room" onclick="toggleClue('clue8')">
-  🏖️ Mission Beach Breakout Room
-  <div class="clue hidden" id="clue8">Inside, the whiteboard has a cryptic message: “Meet @ 3rd floor stairwell - midnight.”</div>
-</div>
-
-<div class="room" onclick="toggleClue('clue9')">
-  🏖️ Pacific Beach Breakout Room
-  <div class="clue hidden" id="clue9">A GoPro was hidden behind a curtain — footage shows someone tampering with cables.</div>
-</div>
-
-<div class="room" onclick="toggleClue('clue10')">
-  🏖️ La Jolla Breakout Room
-  <div class="clue hidden" id="clue10">There's a torn corner of a document that seems to match a piece found in the Grand Hall.</div>
-</div>
-
-<div class="footer">
-  Created for the AV Team at Manchester Grand Hyatt • Hosted with ❤️ on Vercel + GitHub
+<div class="section hidden" id="ending">
+  <h2 id="endingTitle"></h2>
+  <p id="endingText"></p>
+  <button class="btn" onclick="location.reload()">Play Again</button>
 </div>
 
 <script>
-  function toggleClue(id) {
-    const clue = document.getElementById(id);
-    clue.classList.toggle('hidden');
+  let inventory = [];
+  const neededClues = 5;
+
+  function chooseCharacter(name) {
+    document.getElementById('intro').classList.add('hidden');
+    document.getElementById('game').classList.remove('hidden');
+    document.getElementById('welcome').textContent = `Welcome, ${name}!`;
+  }
+
+  function visit(room, clue) {
+    if (!inventory.includes(clue)) {
+      inventory.push(clue);
+      const item = document.createElement('div');
+      item.className = 'item';
+      item.textContent = clue;
+      document.getElementById('inventory').appendChild(item);
+      if (inventory.length >= neededClues) {
+        document.getElementById('solveSection').classList.remove('hidden');
+      }
+    } else {
+      alert("You've already found the clue here!");
+    }
+  }
+
+  function solve(suspect) {
+    document.getElementById('game').classList.add('hidden');
+    document.getElementById('ending').classList.remove('hidden');
+
+    if (suspect === 'You, by accident') {
+      document.getElementById('endingTitle').textContent = "😅 Surprise!";
+      document.getElementById('endingText').textContent = "Turns out you packed the mic in your own backpack while cleaning up. Whoops!";
+    } else if (suspect === 'Banquet Dave') {
+      document.getElementById('endingTitle').textContent = "🍽️ Guilty as Charged!";
+      document.getElementById('endingText').textContent = "Banquet Dave traded the mic for crème brûlée. Justice is served (cold).";
+    } else {
+      document.getElementById('endingTitle').textContent = "👻 Paranormal Reveal!";
+      document.getElementById('endingText').textContent = "The Ghost of Hyatt Past was testing a frequency portal... but accidentally stole the mic across dimensions!";
+    }
   }
 </script>
 

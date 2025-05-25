@@ -73,7 +73,6 @@
   </style>
 </head>
 <body>
-
 <audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3"></audio>
 <audio id="clueSound" src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-completed-2062.mp3"></audio>
 
@@ -105,7 +104,6 @@
     <button class="btn" onclick="location.reload()">🔁 Play Again</button>
   </div>
 </div>
-
 <script>
   const clickSound = document.getElementById('clickSound');
   const clueSound = document.getElementById('clueSound');
@@ -132,7 +130,7 @@
   ];
 
   let currentScenario;
-  let currentClues = [];
+  let visitedRooms = new Set();
   let player;
 
   function playSound(sound) {
@@ -167,14 +165,17 @@
     playSound(clickSound);
     document.getElementById("roomTitle").textContent = room.name;
     document.getElementById("clueText").textContent = room.clue;
-    if (!currentClues.includes(room.clue)) {
-      currentClues.push(room.clue);
+
+    if (!visitedRooms.has(room.name)) {
+      visitedRooms.add(room.name);
       playSound(clueSound);
     }
-    if (currentClues.length === currentScenario.rooms.length) {
-      setTimeout(showEnding, 2000);
-    }
+
     switchScreen("screen-lobby", "screen-room");
+
+    if (visitedRooms.size === currentScenario.rooms.length) {
+      setTimeout(showEnding, 1500);
+    }
   }
 
   function returnToLobby() {
@@ -187,15 +188,16 @@
     document.getElementById("endingText").textContent = `${currentScenario.culprit} was behind it all! Great job, ${player}!`;
     const inv = document.getElementById("finalInventory");
     inv.innerHTML = "";
-    currentClues.forEach(clue => {
+    currentScenario.rooms.forEach(room => {
       const div = document.createElement("div");
       div.className = "item";
-      div.textContent = clue;
+      div.textContent = room.clue;
       inv.appendChild(div);
     });
     switchScreen("screen-room", "screen-ending");
   }
 </script>
-
 </body>
 </html>
+
+

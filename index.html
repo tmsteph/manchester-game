@@ -7,21 +7,24 @@
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: #0f111a;
+      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
       color: #f8f8f2;
       margin: 0;
       padding: 20px;
+      line-height: 1.6;
     }
     h1, h2 {
       text-align: center;
       color: #ffcc00;
+      margin-bottom: 0;
     }
     .section {
       max-width: 800px;
       margin: 20px auto;
       padding: 20px;
-      background: #1c1e2a;
+      background: rgba(28, 30, 42, 0.95);
       border-radius: 10px;
+      box-shadow: 0 0 10px #00000055;
     }
     .btn {
       background: #ffcc00;
@@ -31,6 +34,7 @@
       border-radius: 5px;
       font-weight: bold;
       cursor: pointer;
+      transition: background 0.3s;
     }
     .btn:hover {
       background: #ffd633;
@@ -45,15 +49,21 @@
       margin-top: 10px;
     }
     .item {
-      background: #282a36;
+      background: #44475a;
       padding: 5px 10px;
       border-radius: 5px;
+    }
+    .score {
+      text-align: center;
+      margin-top: 20px;
+      font-weight: bold;
+      color: #00ffcc;
     }
   </style>
 </head>
 <body>
 
-<h1>🎤 Hyatt AV Mystery Generator</h1>
+<h1>🔍 Hyatt AV Mystery Game</h1>
 
 <div class="section" id="intro">
   <h2>Choose Your AV Tech</h2>
@@ -64,16 +74,17 @@
 
 <div class="section hidden" id="game">
   <h2 id="welcome"></h2>
-  <p>You’ve just discovered something strange during a high-profile event. Who — or what — is behind it?</p>
-  <p>Explore rooms, gather 5 clues, and solve the mystery!</p>
+  <p id="missionText"></p>
 
   <div id="rooms"></div>
 
-  <h3>Inventory</h3>
+  <h3>🧾 Inventory</h3>
   <div class="inventory" id="inventory"></div>
 
+  <div class="score" id="scoreDisplay">Score: 0</div>
+
   <div id="solveSection" class="hidden">
-    <h2>Who or what is responsible?</h2>
+    <h2>🔎 Who or what is responsible?</h2>
     <div id="suspects"></div>
   </div>
 </div>
@@ -81,57 +92,60 @@
 <div class="section hidden" id="ending">
   <h2 id="endingTitle"></h2>
   <p id="endingText"></p>
+  <div class="score" id="finalScore"></div>
   <button class="btn" onclick="location.reload()">Play Again</button>
 </div>
 
 <script>
   let inventory = [];
+  let score = 0;
   const neededClues = 5;
 
   const scenarios = [
     {
       title: "Missing Microphone Mayhem",
       clues: [
-        { room: "Seaport Ballroom", clue: "You find a bag of feedback suppressors — one is clearly missing." },
-        { room: "Harbor Ballroom", clue: "A ghostly whisper repeats 'check the ceiling...'" },
-        { room: "CS Desk", clue: "A guest report says they saw someone in AV black gear sneak away." },
-        { room: "Grand Hall", clue: "A note says 'Meet behind the riser. Midnight. Don't be late.'" },
-        { room: "Housekeeping", clue: "They found a lens cap inside a laundry chute." },
-        { room: "Banquets", clue: "One server is missing — and left a headset on the dessert table." }
+        { room: "Seaport Ballroom", clue: "A bag of feedback suppressors is missing one." },
+        { room: "Harbor Ballroom", clue: "Ghostly whispers echo, 'check the ceiling...'" },
+        { room: "CS Desk", clue: "A guest saw someone in AV gear sneak off." },
+        { room: "Grand Hall", clue: "A note says 'Midnight. Riser. Be there.'" },
+        { room: "Housekeeping", clue: "A lens cap was found in a laundry chute." },
+        { room: "Banquets", clue: "Someone left a headset on the dessert cart." }
       ],
-      suspects: ["The Ghost of Hyatt Past", "Banquet Dave", "AV Tech Alex"],
-      culprit: "AV Tech Alex",
-      endings: {
-        "The Ghost of Hyatt Past": "The ghost is innocent — just vibing.",
-        "Banquet Dave": "He might have eaten the evidence, but not guilty this time.",
-        "AV Tech Alex": "Alex forgot to return the mic after a rogue podcast session."
-      }
+      suspects: ["Ghost of Hyatt Past", "Banquet Dave", "AV Tech Alex"]
     },
     {
       title: "Phantom Frequency Frenzy",
       clues: [
-        { room: "Seaport Ballroom", clue: "The mic's frequency was hijacked during the keynote." },
-        { room: "Harbor Ballroom", clue: "A frequency scanner shows unknown signals bouncing around." },
-        { room: "CS Desk", clue: "A broken walkie-talkie was left buzzing static morse code." },
-        { room: "Coronado Ballroom", clue: "You find a book titled 'Ghost Frequencies & You'." },
-        { room: "Mission Beach Room", clue: "There’s a Ouija board made from AV cue cards." }
+        { room: "Seaport Ballroom", clue: "Mic frequency was hijacked." },
+        { room: "Harbor Ballroom", clue: "Strange signals bounce off the walls." },
+        { room: "CS Desk", clue: "Walkie-talkie transmits ghostly Morse code." },
+        { room: "Coronado Ballroom", clue: "A book: 'Ghost Frequencies & You'" },
+        { room: "Mission Beach", clue: "A Ouija board made of AV cue cards." }
       ],
-      suspects: ["The Phantom Tech", "Frequency Steve", "Ghost of Hyatt Past"],
-      culprit: "The Phantom Tech",
-      endings: {
-        "The Phantom Tech": "It was real. The phantom haunts soundboards across the country.",
-        "Frequency Steve": "Steve’s just a nerd. Misunderstood but harmless.",
-        "Ghost of Hyatt Past": "A red herring again!"
-      }
+      suspects: ["Phantom Tech", "Frequency Steve", "Ghost of Hyatt Past"]
+    },
+    {
+      title: "Projector Panic",
+      clues: [
+        { room: "La Jolla Room", clue: "Burn marks near the HDMI hub." },
+        { room: "Del Mar Room", clue: "Someone left instructions written in code." },
+        { room: "Banquets", clue: "The projector was replaced with a toaster." },
+        { room: "Housekeeping", clue: "Found black gloves and wire strippers." },
+        { room: "CS Desk", clue: "A ticket requesting a backup projector — hours before the issue." }
+      ],
+      suspects: ["Engineer Ed", "The Intern", "Techno Gremlin"]
     }
   ];
 
   const selected = scenarios[Math.floor(Math.random() * scenarios.length)];
+  const culprit = selected.suspects[Math.floor(Math.random() * selected.suspects.length)];
 
   function chooseCharacter(name) {
     document.getElementById('intro').classList.add('hidden');
     document.getElementById('game').classList.remove('hidden');
-    document.getElementById('welcome').textContent = `Welcome, ${name}! Your mission: ${selected.title}`;
+    document.getElementById('welcome').textContent = `Welcome, ${name}!`;
+    document.getElementById('missionText').textContent = `Your mission: ${selected.title}`;
 
     const roomsDiv = document.getElementById('rooms');
     selected.clues.forEach(({ room, clue }) => {
@@ -159,20 +173,37 @@
       item.className = 'item';
       item.textContent = clue;
       document.getElementById('inventory').appendChild(item);
+      score += 10;
+      updateScore();
       if (inventory.length >= neededClues) {
         document.getElementById('solveSection').classList.remove('hidden');
       }
     } else {
-      alert("You've already collected that clue!");
+      alert("You've already investigated this room.");
+      score -= 5;
+      updateScore();
     }
+  }
+
+  function updateScore() {
+    document.getElementById('scoreDisplay').textContent = "Score: " + score;
   }
 
   function solve(suspect) {
     document.getElementById('game').classList.add('hidden');
     document.getElementById('ending').classList.remove('hidden');
-    const isCorrect = suspect === selected.culprit;
-    document.getElementById('endingTitle').textContent = isCorrect ? "🎉 Mystery Solved!" : "❌ Wrong Call!";
-    document.getElementById('endingText').textContent = selected.endings[suspect];
+
+    if (suspect === culprit) {
+      document.getElementById('endingTitle').textContent = "🎉 Mystery Solved!";
+      document.getElementById('endingText').textContent = `${suspect} was indeed the culprit! Great detective work.`;
+      score += 50;
+    } else {
+      document.getElementById('endingTitle').textContent = "❌ Wrong Accusation!";
+      document.getElementById('endingText').textContent = `${suspect} was innocent. The real culprit was ${culprit}. Better luck next time.`;
+      score -= 20;
+    }
+
+    document.getElementById('finalScore').textContent = "Final Score: " + score;
   }
 </script>
 

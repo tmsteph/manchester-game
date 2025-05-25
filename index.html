@@ -4,77 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Hyatt AV Mystery Game</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #101820;
-      color: #f5f5f5;
-      margin: 0;
-      padding: 0;
-      overflow-x: hidden;
-    }
-    h1, h2 {
-      text-align: center;
-      color: #ffd700;
-    }
-    .container {
-      max-width: 800px;
-      margin: auto;
-      padding: 20px;
-    }
-    .screen {
-      display: none;
-      transition: opacity 0.8s ease-in-out;
-      opacity: 0;
-    }
-    .screen.active {
-      display: block;
-      opacity: 1;
-    }
-    .btn {
-      display: inline-block;
-      background: #ffd700;
-      color: #000;
-      padding: 10px 20px;
-      margin: 10px;
-      border: none;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
-    .btn:hover {
-      background: #ffea00;
-    }
-    .room-btn {
-      display: block;
-      width: 100%;
-      text-align: left;
-      margin: 10px 0;
-    }
-    .inventory {
-      background: #1a1a2e;
-      padding: 10px;
-      border-radius: 5px;
-      margin: 15px 0;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    .item {
-      background: #282c34;
-      padding: 8px 12px;
-      border-radius: 5px;
-    }
-    @media (max-width: 600px) {
-      h1 { font-size: 1.5rem; }
-      .btn { font-size: 1rem; padding: 8px 16px; }
-    }
-  </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-<audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3"></audio>
-<audio id="clueSound" src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-completed-2062.mp3"></audio>
+
+<audio id="clickSound" src="assets/click.mp3"></audio>
+<audio id="clueSound" src="assets/clue.mp3"></audio>
 
 <div class="container">
   <div id="screen-intro" class="screen active">
@@ -89,6 +24,7 @@
     <h2 id="greeting"></h2>
     <p id="scenarioText"></p>
     <div id="roomList"></div>
+    <div class="score" id="scoreDisplay">Score: 0</div>
   </div>
 
   <div id="screen-room" class="screen">
@@ -97,107 +33,20 @@
     <button class="btn" onclick="returnToLobby()">⬅ Back to Lobby</button>
   </div>
 
+  <div id="screen-accuse" class="screen">
+    <h2>Who do you think did it?</h2>
+    <div id="suspectList"></div>
+  </div>
+
   <div id="screen-ending" class="screen">
     <h2 id="endingTitle"></h2>
     <p id="endingText"></p>
     <div class="inventory" id="finalInventory"></div>
+    <div class="score" id="finalScore"></div>
     <button class="btn" onclick="location.reload()">🔁 Play Again</button>
   </div>
 </div>
-<script>
-  const clickSound = document.getElementById('clickSound');
-  const clueSound = document.getElementById('clueSound');
 
-  const scenarios = [
-    {
-      title: "Phantom Frequency Frenzy",
-      rooms: [
-        { name: "Seaport Ballroom", clue: "The mic's frequency was hijacked!" },
-        { name: "Harbor Ballroom", clue: "Ghost signals echo through the sound system." },
-        { name: "CS Desk", clue: "Walkie-talkie emits Morse code from the void." }
-      ],
-      culprit: "The Phantom Tech"
-    },
-    {
-      title: "Missing Microphone Mayhem",
-      rooms: [
-        { name: "Grand Hall", clue: "A feedback suppressor is missing from the kit." },
-        { name: "Banquets", clue: "Someone left a headset in the cake tray." },
-        { name: "Housekeeping", clue: "A note says 'Check the riser at midnight.'" }
-      ],
-      culprit: "AV Tech Alex"
-    }
-  ];
-
-  let currentScenario;
-  let visitedRooms = new Set();
-  let player;
-
-  function playSound(sound) {
-    sound.currentTime = 0;
-    sound.play();
-  }
-
-  function switchScreen(from, to) {
-    document.getElementById(from).classList.remove('active');
-    document.getElementById(to).classList.add('active');
-  }
-
-  function startGame(character) {
-    playSound(clickSound);
-    player = character;
-    currentScenario = scenarios[Math.floor(Math.random() * scenarios.length)];
-    document.getElementById("greeting").textContent = `Welcome, ${player}!`;
-    document.getElementById("scenarioText").textContent = `Your mission: ${currentScenario.title}`;
-    const roomList = document.getElementById("roomList");
-    roomList.innerHTML = "";
-    currentScenario.rooms.forEach(room => {
-      const btn = document.createElement("button");
-      btn.className = "btn room-btn";
-      btn.textContent = `🔍 Enter ${room.name}`;
-      btn.onclick = () => enterRoom(room);
-      roomList.appendChild(btn);
-    });
-    switchScreen("screen-intro", "screen-lobby");
-  }
-
-  function enterRoom(room) {
-    playSound(clickSound);
-    document.getElementById("roomTitle").textContent = room.name;
-    document.getElementById("clueText").textContent = room.clue;
-
-    if (!visitedRooms.has(room.name)) {
-      visitedRooms.add(room.name);
-      playSound(clueSound);
-    }
-
-    switchScreen("screen-lobby", "screen-room");
-
-    if (visitedRooms.size === currentScenario.rooms.length) {
-      setTimeout(showEnding, 1500);
-    }
-  }
-
-  function returnToLobby() {
-    playSound(clickSound);
-    switchScreen("screen-room", "screen-lobby");
-  }
-
-  function showEnding() {
-    document.getElementById("endingTitle").textContent = "🎉 Mystery Solved!";
-    document.getElementById("endingText").textContent = `${currentScenario.culprit} was behind it all! Great job, ${player}!`;
-    const inv = document.getElementById("finalInventory");
-    inv.innerHTML = "";
-    currentScenario.rooms.forEach(room => {
-      const div = document.createElement("div");
-      div.className = "item";
-      div.textContent = room.clue;
-      inv.appendChild(div);
-    });
-    switchScreen("screen-room", "screen-ending");
-  }
-</script>
+<script src="script.js"></script>
 </body>
 </html>
-
-
